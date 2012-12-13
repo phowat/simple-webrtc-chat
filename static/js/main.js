@@ -87,6 +87,8 @@
 			var cand_data = {sdpMLineIndex:message_data.label, candidate:message_data.candidate};
 			var candidate = new RTCIceCandidate(cand_data);
 			pc.addIceCandidate(candidate);
+		} else if ( message_data.action === "hangup" ) {
+			window.location.href = '/disconnected'
 		}
 	};
 

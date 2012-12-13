@@ -38,6 +38,10 @@ def index():
 def occupied():
     return 'Room Occupied!'
 
+@app.route('/disconnected')
+def occupied():
+    return 'Remote user disconnected!'
+
 @app.route('/session/<token>')
 def session(token):
     role = None
@@ -54,6 +58,36 @@ def session(token):
     return render_template('index.html', token=token, role=role)
 
 class WSHandler(WebSocketHandler):
+
+    def open(self):
+        print "Opening ws handle"
+        self.token = None
+        self.role = None
+
+    def on_close(self):
+        try:
+            session = sessions[self.token]
+        except:
+            print "Closing unknown token."
+
+        if self.role == 'player1':
+            local_client = session.player1
+            remote_client = session.player2
+        elif self.role == 'player2':
+            local_client = session.player2
+            remote_client = session.player1
+        else:
+            print "Closing unknown role."
+        
+        local_client.connected = False
+        local_client.queue.put_nowait('STOP')
+
+        if remote_client.connected is True:
+            response = { 'action': 'hangup' }
+            remote_client.queue.put_nowait(json.dumps(response))
+        else:
+            print "Connection ended, removing token "+self.token
+            del(sessions[self.token])
 
     def __do_close(self):
         try:
@@ -114,6 +148,14 @@ class WSHandler(WebSocketHandler):
         except:
             sessions[token] = WebRTCSession()
 
+        self.token = token
+        self.role = role
+
+        if role == "player1":
+            sessions[token].player1.connected = True
+        elif role == "player2":
+            sessions[token].player2.connected = True
+
         ws_thread = Thread(
             target=getattr(self, role+"_thread"),
             args=(token,))
@@ -123,6 +165,9 @@ class WSHandler(WebSocketHandler):
         while True:
             try:
                 message = sessions[token].player1.queue.get(True, 0.05)
+                if message == 'STOP':
+                    print "Ending Player1 message thread for "+token+"."
+                    return
                 self.write_message(message)
             except Queue.Empty:
                 pass
@@ -131,6 +176,9 @@ class WSHandler(WebSocketHandler):
         while True:
             try:
                 message = sessions[token].player2.queue.get(True, 0.05)
+                if message == 'STOP':
+                    print "Ending Player2 message thread for "+token+"."
+                    return
                 self.write_message(message)
             except Queue.Empty:
                 pass
