@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, url_for
 import tornado.web
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import PeriodicCallback,IOLoop
@@ -31,8 +31,21 @@ def generate_token():
 
 @app.route('/')
 def index():
+    return render_template(
+            'index.html',
+            jsfile=url_for(
+                'static',
+                filename='js/index.js'))
+
+@app.route('/voice')
+def voice():
     token = generate_token()
-    return redirect('/session/'+token)
+    return redirect('/session/voice/'+token)
+
+@app.route('/video')
+def video():
+    token = generate_token()
+    return redirect('/session/video/'+token)
 
 @app.route('/occupied')
 def occupied():
@@ -42,8 +55,8 @@ def occupied():
 def disconnected():
     return 'Remote user disconnected!'
 
-@app.route('/session/<token>')
-def session(token):
+@app.route('/session/<session_type>/<token>')
+def session(session_type,token):
     role = None
     try:
         session = sessions[token]
@@ -55,7 +68,13 @@ def session(token):
             role = "player2"
         else:
             return redirect('/occupied')
-    return render_template('index.html', token=token, role=role)
+    return render_template(
+            session_type+'.html', 
+            jsfile=url_for(
+                'static',
+                filename='js/main.js'),
+            token=token, 
+            role=role)
 
 class WSHandler(WebSocketHandler):
 
