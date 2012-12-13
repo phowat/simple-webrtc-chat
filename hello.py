@@ -39,7 +39,7 @@ def occupied():
     return 'Room Occupied!'
 
 @app.route('/disconnected')
-def occupied():
+def disconnected():
     return 'Remote user disconnected!'
 
 @app.route('/session/<token>')
