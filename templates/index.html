@@ -22,10 +22,12 @@
         <div class="container">
 			<div class="row">
 				<div class="span8">
-					<video id='remote-video' autoplay></video>
+					<audio id='remote-video' autoplay></audio>
+					<!--					<video id='remote-video' autoplay></video>  -->
 				</div>
 				<div class="span4">
-					<video id='local-video'  width="200px" autoplay></video>
+					<audio id='local-video'  width="200px" autoplay></audio>
+					<!--				<video id='local-video'  width="200px" autoplay></video>  -->
 				</div>
 			</div>
         </div> <!-- /container -->
@@ -39,11 +41,5 @@
 			var role = '{{ role }}';
 		</script>
 		<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-        <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
-        </script>
     </body>
 </html>

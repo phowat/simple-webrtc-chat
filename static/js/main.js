@@ -6,7 +6,8 @@
 	var ws_open = 0;
 	var mediaConstraints = {'mandatory': {
 	                                'OfferToReceiveAudio':true, 
-                          'OfferToReceiveVideo':true }};
+  ////                        'OfferToReceiveVideo':true }};
+                          'OfferToReceiveVideo':false}};
 	var iceStuff = $.parseJSON('{"iceServers": [{"url": "stun:stun.l.google.com:19302"}]}');
 
 	var failedGUM = function(e) {
@@ -20,7 +21,9 @@
 			data = $.extend(data, extras);
 		}
 		if (ws_open === 1) {
+			console.log("4 tatata");
 			ws.send(JSON.stringify(data));
+			console.log("5 tatata");
 		} else {
 			console.log("ERROR: Websocket not open.");
 		}
@@ -49,6 +52,7 @@
 		pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
 			attachMediaStream($('#remote-video')[0], m.stream);
+//			$('#remote-video').hide();
 		}; //onRemoteStreamAdded;
 
 		pc.onremovestream = function (m) { 
@@ -99,9 +103,14 @@
 		ws.onclose = function(evt) { ws_open = 0; }; 
 		ws.onerror = function(evt) { ws_open = 0; }; 
 
-		getUserMedia({video: true, audio: true}, function(lStream) {
+		getUserMedia({video: false, audio: true}, function(lStream) {
+	//	getUserMedia({video: false, audio: true}, function(lStream) {
+			console.log("1 tatata");
 			localStream = lStream
+			console.log("2 tatata");
 			attachMediaStream($('#local-video')[0], localStream);
+			console.log("3 tatata");
+//			$('#local-video').hide();
 			wsSend('register');
 			
 			if ( role === "player2" ) {

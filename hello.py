@@ -69,6 +69,7 @@ class WSHandler(WebSocketHandler):
             session = sessions[self.token]
         except:
             print "Closing unknown token."
+            return
 
         if self.role == 'player1':
             local_client = session.player1
@@ -78,6 +79,7 @@ class WSHandler(WebSocketHandler):
             remote_client = session.player1
         else:
             print "Closing unknown role."
+            return
         
         local_client.connected = False
         local_client.queue.put_nowait('STOP')
