@@ -48,8 +48,7 @@
 		pc.onopen = function (m) { console.log("SessionOpen", m); }; //onSessionOpened;
 		pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
-//			attachMediaStream($('#remote-video'), m.stream);
-			attachMediaStream($('video')[1], m.stream);
+			attachMediaStream($('#remote-video')[0], m.stream);
 		}; //onRemoteStreamAdded;
 
 		pc.onremovestream = function (m) { 
@@ -102,7 +101,7 @@
 
 		getUserMedia({video: true, audio: true}, function(lStream) {
 			localStream = lStream
-			attachMediaStream($('video')[0], localStream);
+			attachMediaStream($('#local-video')[0], localStream);
 			wsSend('register');
 			
 			if ( role === "player2" ) {
