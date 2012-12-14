@@ -4,9 +4,8 @@
 	var pc ;
 	var ws ;
 	var ws_open = 0;
-	var mediaConstraints = {'mandatory': {
-	                                'OfferToReceiveAudio':true, 
-                         'OfferToReceiveVideo':true }};
+	var mediaConstraints ;
+	var mediaStreams;
 	var iceStuff = $.parseJSON('{"iceServers": [{"url": "stun:stun.l.google.com:19302"}]}');
 
 	var failedGUM = function(e) {
@@ -48,7 +47,7 @@
 		pc.onopen = function (m) { console.log("SessionOpen", m); }; //onSessionOpened;
 		pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
-			attachMediaStream($('#remote-video')[0], m.stream);
+			attachMediaStream($('#remote-stream')[0], m.stream);
 		}; //onRemoteStreamAdded;
 
 		pc.onremovestream = function (m) { 
@@ -93,15 +92,33 @@
 
     $(window.document).ready(function () {
 
+		if (mediaType === "voice") {
+			mediaConstraints = {
+				'mandatory': {
+					'OfferToReceiveAudio':true, 
+					'OfferToReceiveVideo':false}};
+			mediaStreams = {video: false, audio: true}
+
+		} else if(mediaType === "video") {
+			mediaConstraints = {
+				'mandatory': {
+					'OfferToReceiveAudio':true, 
+					'OfferToReceiveVideo':true }};
+			mediaStreams = {video: true, audio: true}
+
+		} else {
+			console.log("Unknown media type ", mediaType);
+		}
+
         ws = new WebSocket("ws://" + document.domain + ":5000/ws");
         ws.onmessage = wsOnMessage;
 		ws.onopen = function(evt) { ws_open = 1; }; 
 		ws.onclose = function(evt) { ws_open = 0; }; 
 		ws.onerror = function(evt) { ws_open = 0; }; 
 
-		getUserMedia({video: true, audio: true}, function(lStream) {
+		getUserMedia(mediaStreams, function(lStream) {
 			localStream = lStream
-			attachMediaStream($('#local-video')[0], localStream);
+			attachMediaStream($('#local-stream')[0], localStream);
 			wsSend('register');
 			
 			if ( role === "player2" ) {

@@ -74,7 +74,8 @@ def session(session_type,token):
                 'static',
                 filename='js/main.js'),
             token=token, 
-            role=role)
+            role=role,
+            mediaType=session_type)
 
 class WSHandler(WebSocketHandler):
 
