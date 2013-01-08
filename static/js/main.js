@@ -13,8 +13,9 @@
 		console.log('Failed to get user media.', e);
 	};
 
-	var wsSend = function (action, extras) {
-		var data = { role: role, token: token, action: action } ;
+	var wsSend = function (command, destination, extras) {
+		var data = { command: command, destination: destination } ;
+
 		if ( typeof extras !== 'undefined' ) {
 			data = $.extend(data, extras);
 		}
@@ -27,13 +28,30 @@
 
 	var sendOffer = function (sessDesc) {
 		pc.setLocalDescription(sessDesc);
-		wsSend("offer", { session_description: sessDesc });
+		wsSend(
+            "SEND", 
+            "/queue/"+token+".player1",
+            {content: { action: "offer", offer: sessDesc }}
+        );
 	};
 
 	var sendAnswer = function (sessDesc) {
 		pc.setLocalDescription(sessDesc);
-		wsSend("answer", { session_description: sessDesc });
-	}
+		wsSend(
+            "SEND", 
+            "/queue/"+token+".player2",
+            {content: { action: "answer", answer: sessDesc }}
+        );
+	};
+
+    var sinsSubscribe = function (destination) {
+        wsSend('SUBSCRIBE', destination);
+    };  
+
+    var sinsUnsubscribe = function (destination) {
+        
+        wsSend('UNSUBSCRIBE', destination);
+    };  
 
 	var doPlayer2Init = function () {
 		createPeerConnection();
@@ -55,14 +73,25 @@
 		}; //onRemoteStreamRemoved;
 
 		pc.onicecandidate = function (event) { 
-			console.log("SessionIceCandidate", event); 
+            console.log("SessionIceCandidate", event); 
+            var ice_dest = "/queue/"+token+".";
+            if ( role === "player1" ) {
+                ice_dest += "player2";
+            } else if ( role === "player2" ) {
+                ice_dest += "player1";
+            }
+
 			if (event.candidate) {
-				wsSend('candidate', 
-						{
-							label: event.candidate.sdpMLineIndex,
-							id: event.candidate.sdpMid,
-							candidate: event.candidate.candidate
-						}
+				wsSend(
+                    "SEND",
+                    ice_dest,
+                    { content: {
+                        action: "candidate",
+						label: event.candidate.sdpMLineIndex,
+						id: event.candidate.sdpMid,
+						candidate: event.candidate.candidate
+					  }
+                    }
 				);
 			} else { console.log("End of candidates.");
 			}
@@ -86,7 +115,7 @@
 			var candidate = new RTCIceCandidate(cand_data);
 			pc.addIceCandidate(candidate);
 		} else if ( message_data.action === "hangup" ) {
-			window.location.href = '/disconnected'
+			window.location.href = '/disconnected/'+token
 		}
 	};
 
@@ -110,7 +139,7 @@
 			console.log("Unknown media type ", mediaType);
 		}
 
-        ws = new WebSocket("ws://" + document.domain + ":5000/ws");
+        ws = new WebSocket("ws://" + document.domain + ":5000/sins");
         ws.onmessage = wsOnMessage;
 		ws.onopen = function(evt) { ws_open = 1; }; 
 		ws.onclose = function(evt) { ws_open = 0; }; 
@@ -119,7 +148,7 @@
 		getUserMedia(mediaStreams, function(lStream) {
 			localStream = lStream
 			attachMediaStream($('#local-stream')[0], localStream);
-			wsSend('register');
+            sinsSubscribe('/queue/'+token+'.'+role);
 			
 			if ( role === "player2" ) {
 				doPlayer2Init();
