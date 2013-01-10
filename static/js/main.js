@@ -30,7 +30,7 @@
 		pc.setLocalDescription(sessDesc);
 		wsSend(
             "SEND", 
-            "/queue/"+token+".player1",
+            "/pair/"+token,
             {content: { action: "offer", offer: sessDesc }}
         );
 	};
@@ -39,7 +39,7 @@
 		pc.setLocalDescription(sessDesc);
 		wsSend(
             "SEND", 
-            "/queue/"+token+".player2",
+            "/pair/"+token,
             {content: { action: "answer", answer: sessDesc }}
         );
 	};
@@ -74,12 +74,7 @@
 
 		pc.onicecandidate = function (event) { 
             console.log("SessionIceCandidate", event); 
-            var ice_dest = "/queue/"+token+".";
-            if ( role === "player1" ) {
-                ice_dest += "player2";
-            } else if ( role === "player2" ) {
-                ice_dest += "player1";
-            }
+            var ice_dest = "/pair/"+token;
 
 			if (event.candidate) {
 				wsSend(
@@ -148,7 +143,7 @@
 		getUserMedia(mediaStreams, function(lStream) {
 			localStream = lStream
 			attachMediaStream($('#local-stream')[0], localStream);
-            sinsSubscribe('/queue/'+token+'.'+role);
+            sinsSubscribe('/pair/'+token);
 			
 			if ( role === "player2" ) {
 				doPlayer2Init();
