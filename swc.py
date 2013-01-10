@@ -38,7 +38,7 @@ def occupied():
     return 'Room Occupied!'
 
 @app.route('/disconnected/<token>')
-def disconnected():
+def disconnected(token):
     try:
         del(sessions[token])
     except:
