@@ -58,6 +58,12 @@
 		pc.createOffer(sendOffer, null, mediaConstraints);
 	};
 
+	var doPlayer3Init = function () {
+		//TODO
+//		createPeerConnection();
+//		pc.createOffer(sendOffer, null, mediaConstraints);
+	};
+
 	var createPeerConnection = function () {
 
 		pc = new RTCPeerConnection(iceStuff);
@@ -65,7 +71,7 @@
 		pc.onopen = function (m) { console.log("SessionOpen", m); }; //onSessionOpened;
 		pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
-			attachMediaStream($('#remote-stream')[0], m.stream);
+			attachMediaStream($('#remote-stream-1')[0], m.stream);
 		}; //onRemoteStreamAdded;
 
 		pc.onremovestream = function (m) { 
@@ -147,7 +153,10 @@
 			
 			if ( role === "player2" ) {
 				doPlayer2Init();
+			} else if ( role === "player3" ) {
+				doPlayer3Init();
 			}
+
 		}, failedGUM);
    });
 

@@ -8,6 +8,7 @@ class SWCSession(object):
     def __init__(self):
         self.p1_connected = True
         self.p2_connected = False
+        self.p3_connected = False
 
 def generate_token():
     word = ''
@@ -54,11 +55,17 @@ def session(session_type,token):
         session = sessions[token] = SWCSession()
         role = "player1"
 
+    if role is None and session.p2_connected is False:
+        session.p2_connected = True
+        role = "player2"
+    
     if role is None:
-        if session.p2_connected is False:
-            role = "player2"
+        if session.p3_connected is False: 
+            session.p2_connected = True
+            role = "player3"
         else:
             return redirect('/occupied')
+
     return render_template(
         session_type+'.html', 
         jsfile=url_for(
