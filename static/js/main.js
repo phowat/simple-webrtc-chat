@@ -6,7 +6,8 @@
 	var ws_open = 0;
 	var mediaConstraints ;
 	var mediaStreams;
-	var iceStuff = $.parseJSON('{"iceServers": [{"url": "stun:stun.l.google.com:19302"}]}');
+	var iceStuff = $.parseJSON(
+        '{"iceServers": [{"url": "stun:stun.l.google.com:19302"}]}');
 
 	var failedGUM = function(e) {
 		// Failed to getUserMedia
@@ -67,8 +68,8 @@
 	var createPeerConnection = function () {
 
 		pc = new RTCPeerConnection(iceStuff);
-		pc.onconnecting = function (m) { console.log("SessionConnecting", m); }; //onSessionConnecting;
-		pc.onopen = function (m) { console.log("SessionOpen", m); }; //onSessionOpened;
+		pc.onconnecting = function (m) { console.log("pcConnecting", m); };
+		pc.onopen = function (m) { console.log("SessionOpen", m); };
 		pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
 			attachMediaStream($('#remote-stream-1')[0], m.stream);
@@ -107,12 +108,19 @@
 		var message_data = JSON.parse(msg.data);
 		if ( message_data.action === "offer" ) {
 			createPeerConnection();
-			pc.setRemoteDescription(new RTCSessionDescription(message_data.offer));
+			pc.setRemoteDescription(
+                new RTCSessionDescription(message_data.offer)
+            );
 			pc.createAnswer(sendAnswer, null, mediaConstraints);
 		} else if ( message_data.action === "answer" ) {
-			pc.setRemoteDescription(new RTCSessionDescription(message_data.answer));
+			pc.setRemoteDescription(
+                new RTCSessionDescription(message_data.answer)
+            );
 		} else if ( message_data.action === "candidate" ) {
-			var cand_data = {sdpMLineIndex:message_data.label, candidate:message_data.candidate};
+			var cand_data = {
+                sdpMLineIndex:message_data.label, 
+                candidate:message_data.candidate
+            };
 			var candidate = new RTCIceCandidate(cand_data);
 			pc.addIceCandidate(candidate);
 		} else if ( message_data.command === "DISCONNECT" ) {
