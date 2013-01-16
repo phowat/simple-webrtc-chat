@@ -1,8 +1,8 @@
 (function ($) {
 	
 	var localStream ;
-	var pc1 = { pname: null, pc: null };
-	var pc2 = { pname: null, pc: null };
+	var pc1 = { pname: null, pc: null, stream_object: '#remote-stream-1' };
+	var pc2 = { pname: null, pc: null, stream_object: '#remote-stream-2' };
 	var ws ;
 	var ws_open = 0;
 	var mediaConstraints ;
@@ -29,6 +29,7 @@
 	};
 
 	var sendOffer = function (sessDesc, destination, pc) {
+        console.log("Sending OFFER to:", destination);
 		pc.setLocalDescription(sessDesc);
 		wsSend(
             "SEND", 
@@ -55,19 +56,18 @@
         wsSend('UNSUBSCRIBE', destination);
     };  
 
-	var doPlayer2Init = function (pname) {
-		createPeerConnection(pc1, pname);
-		pc1.pc.createOffer(
-            function (sd) { sendOffer(sd, "/pair/"+pname, pc1.pc); },
+	var doPlayer2Init = function (pc, pname) {
+		createPeerConnection(pc, pname);
+		pc.pc.createOffer(
+            function (sd) { sendOffer(sd, "/pair/"+pname, pc.pc); },
             null, 
             mediaConstraints
         );
 	};
 
-	var doPlayer3Init = function () {
-		//TODO
-//		createPeerConnection();
-//		pc.createOffer(sendOffer, null, mediaConstraints);
+	var doPlayer3Init = function (pname1, pname2) {
+		doPlayer2Init(pc1, pname1);
+		doPlayer2Init(pc2, pname2);
 	};
 
 	var createPeerConnection = function (pc, pname) {
@@ -79,7 +79,7 @@
 		pc.pc.onopen = function (m) { console.log("SessionOpen", m); };
 		pc.pc.onaddstream = function (m) { 
 			console.log("SessionAddStream", m); 
-			attachMediaStream($('#remote-stream-1')[0], m.stream);
+			attachMediaStream($(pc.stream_object)[0], m.stream);
 		}; //onRemoteStreamAdded;
 
 		pc.pc.onremovestream = function (m) { 
@@ -206,11 +206,11 @@
             } else if ( role === "player2" ) {
                 sinsSubscribe('/pair/'+token+".1-2");
                 sinsSubscribe('/pair/'+token+".2-3");
-				doPlayer2Init(token+".1-2");
+				doPlayer2Init(pc1, token+".1-2");
 			} else if ( role === "player3" ) {
                 sinsSubscribe('/pair/'+token+".1-3");
                 sinsSubscribe('/pair/'+token+".2-3");
-				doPlayer3Init();
+				doPlayer3Init(token+".1-3", token+".2-3");
 			}
 
 		}, failedGUM);
